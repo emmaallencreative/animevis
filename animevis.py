@@ -2,7 +2,7 @@ import requests
 import sqlite3
 import logging
 
-CONN = sqlite3.connect('test.db')
+CONN = sqlite3.connect('../test.db')
 CURSOR = CONN.cursor()
 logging.basicConfig(filename='animevis.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
