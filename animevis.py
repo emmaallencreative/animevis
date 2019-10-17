@@ -1,6 +1,7 @@
 import requests
 import sqlite3
 import logging
+import time
 
 CONN = sqlite3.connect('../test.db')
 CURSOR = CONN.cursor()
@@ -130,15 +131,9 @@ def create_query_template():
 def monitor_pagination():
     """
     TODO
-    Check the rate limit - stop for two minutes if hit
-    Write code to retrieve request header
-    Iterate through pages
-    Keep track of scraped pages
-    Keep track of anime id
     Validate each missing id once - sends email to verify
     Schedule - run every specific day
-    Update database for last scraped page and anime id
-    Git
+    Add anime type (movie/special/tv) to database
     :return:
     """
     pass
@@ -165,9 +160,9 @@ def get_anime_data(page):
 
 def has_anime_ended_or_started(animedate):
     if animedate:
-        logging.error("I'm sending this date {}-{}-{}".format(str(animedate['year']),
-                                                              str(animedate['month']),
-                                                              str(animedate['day'])))
+        # logging.error("I'm sending this date {}-{}-{}".format(str(animedate['year']),
+        #                                                       str(animedate['month']),
+        #                                                       str(animedate['day'])))
         return str(animedate['year']) + '-' + str(animedate['month']) + '-' + str(animedate['day'])
     return ""
 
@@ -190,6 +185,7 @@ def parse_anime_data(data):
         enddate = has_anime_ended_or_started(anime['endDate'])
         season = anime['season']
         insert_anime_data(anilistid, malid, title, startdate, enddate, season)
+    return anilistid
 
 
 def database_qc(action):
@@ -204,18 +200,44 @@ def database_qc(action):
 def page_turner():
     ratelimitremaining = 1
     has_next_page = True
-    page = 1
-    while ratelimitremaining and has_next_page:
+    page = get_last_scrapped_page()
+    while has_next_page:
         print(ratelimitremaining, has_next_page, page)
         ratelimitremaining, data = get_anime_data(page)
-        parse_anime_data(data)
+        last_anilistid = parse_anime_data(data)
         has_next_page = data['data']['Page']['pageInfo']['hasNextPage']
+        logging.debug(f"Page has been parsed, data entered for page {page} and last AniList id was {last_anilistid}")
         page += 1
+        rate_limit_checker(ratelimitremaining)
+        insert_pagination_data(page, last_anilistid)
 
+
+def insert_pagination_data(page, last_anilistid):
+    CURSOR.execute("""INSERT INTO pagination (last_scraped_page, last_scraped_anime_id)
+    VALUES (?,?)""",
+    (page, last_anilistid))
+
+    CONN.commit()
+
+def get_last_scrapped_page():
+    CURSOR.execute('''SELECT MAX(last_scraped_page) FROM pagination''')
+    highest_page = CURSOR.fetchone()
+    logging.debug(f"The highest page is {highest_page[0]}")
+    if highest_page[0] is None:
+        return 1
+    else:
+        return highest_page[0]
+
+
+def rate_limit_checker(ratelimitremaining):
+    logging.debug(f"Rate limit remaining is {ratelimitremaining}")
+    if not ratelimitremaining:
+        logging.debug("I've slept for 60 seconds")
+        time.sleep(60)
 
 
 # database_qc('delete')
-# page_turner()
+page_turner()
 
 # database_qc('select')
 # database_qc('delete')
@@ -223,5 +245,4 @@ def page_turner():
 # print('deleted database')
 
 # database_qc('select')
-
 
