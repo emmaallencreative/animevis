@@ -2,8 +2,9 @@ import requests
 import sqlite3
 import logging
 import time
+import uuid
 
-CONN = sqlite3.connect('../test.db')
+CONN = sqlite3.connect('../animevis.db')
 CURSOR = CONN.cursor()
 logging.basicConfig(filename='animevis.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -132,18 +133,11 @@ def monitor_pagination():
     """
     TODO
     Validate each missing id once - sends email to verify
-    Schedule - run every specific day
-    Add anime type (movie/special/tv) to database
+    Time series rating data
     :return:
     """
     pass
 
-def create_tables():
-    sql_create_table = """ CREATE TABLE IF NOT EXISTS pagination (
-                                            last_scraped_page integer,
-                                            last_scraped_anime_id integer
-                                        ); """
-    CURSOR.execute(sql_create_table)
 
 def get_anime_data(page):
     variables = {
@@ -166,35 +160,64 @@ def has_anime_ended_or_started(animedate):
         return str(animedate['year']) + '-' + str(animedate['month']) + '-' + str(animedate['day'])
     return ""
 
-
-def insert_anime_data(anilistid, malid, title, startdate, enddate, season):
-    CURSOR.execute("""INSERT INTO animelist (id, idmal, title, startdate, enddate, season) 
-    VALUES (?,?,?,?,?,?)""",
-    (anilistid, malid, title, startdate, enddate, season))
-
+def insert_animelist_data(animelist_dict):
+    CURSOR.execute("""INSERT INTO animelist (id, idanilist, idmal, title, startdate, enddate, season) 
+    VALUES (?,?,?,?,?,?,?)""",
+                   (animelist_dict['unique_id'],
+                    animelist_dict['idanilist'],
+                    animelist_dict['idmal'],
+                    animelist_dict['title'],
+                    animelist_dict['startdate'],
+                    animelist_dict['enddate'],
+                    animelist_dict['season']))
     CONN.commit()
+
+
+def parse_animelist_data(unique_id, anime):
+    animelist_dict = {'unique_id': unique_id,
+                      'title': anime['title']['userPreferred'],
+                      'idanilist': anime['id'],
+                      'idmal': anime['idMal'],
+                      'startdate': has_anime_ended_or_started(anime['startDate']),
+                      'enddate': has_anime_ended_or_started(anime['endDate']),
+                      'season': anime['season']}
+    insert_animelist_data(animelist_dict)
+
+
+def insert_details_data(details_dict):
+    CURSOR.execute("""INSERT INTO details (id, description, status, format, animesource, episodes, datasource
+) 
+    VALUES (?,?,?,?,?,?,?)""",
+                   (details_dict['unique_id'],
+                    details_dict['description'],
+                    details_dict['status'],
+                    details_dict['format'],
+                    details_dict['animesource'],
+                    details_dict['episodes'],
+                    details_dict['datasource']))
+    CONN.commit()
+
+
+def parse_details_data(unique_id, anime):
+    details_dict = {'unique_id': unique_id,
+                      'description': anime['description'],
+                      'status': anime['status'],
+                      'format': anime['format'],
+                      'animesource': anime['source'],
+                      'episodes': anime['episodes'],
+                      'datasource': 1}
+    insert_details_data(details_dict)
 
 
 def parse_anime_data(data):
     media = data['data']['Page']['media']
     for anime in media:
-        title = anime['title']['userPreferred']
-        anilistid = anime['id']
-        malid = anime['idMal']
-        startdate = has_anime_ended_or_started(anime['startDate'])
-        enddate = has_anime_ended_or_started(anime['endDate'])
-        season = anime['season']
-        insert_anime_data(anilistid, malid, title, startdate, enddate, season)
-    return anilistid
+        unique_id = uuid.uuid4().hex
+        idanilist = anime['id']
+        parse_animelist_data(unique_id, anime)
+        parse_details_data(unique_id, anime)
+    return idanilist
 
-
-def database_qc(action):
-    if action == 'select':
-        CURSOR.execute('''SELECT * FROM animelist''')
-        data = CURSOR.fetchall()
-        print(data)
-    elif action == 'delete':
-        CURSOR.execute('''DELETE FROM animelist where id > 0''')
 
 
 def page_turner():
@@ -204,18 +227,18 @@ def page_turner():
     while has_next_page:
         print(ratelimitremaining, has_next_page, page)
         ratelimitremaining, data = get_anime_data(page)
-        last_anilistid = parse_anime_data(data)
+        last_idanilist = parse_anime_data(data)
         has_next_page = data['data']['Page']['pageInfo']['hasNextPage']
-        logging.debug(f"Page has been parsed, data entered for page {page} and last AniList id was {last_anilistid}")
+        logging.debug(f"Page has been parsed, data entered for page {page} and last AniList id was {last_idanilist}")
         page += 1
         rate_limit_checker(ratelimitremaining)
-        insert_pagination_data(page, last_anilistid)
+        insert_pagination_data(page, last_idanilist)
 
 
-def insert_pagination_data(page, last_anilistid):
+def insert_pagination_data(page, last_idanilist):
     CURSOR.execute("""INSERT INTO pagination (last_scraped_page, last_scraped_anime_id)
     VALUES (?,?)""",
-    (page, last_anilistid))
+                   (page, last_idanilist))
 
     CONN.commit()
 
@@ -236,8 +259,72 @@ def rate_limit_checker(ratelimitremaining):
         time.sleep(60)
 
 
-# database_qc('delete')
+def create_tables():
+    sql_create_pagination_table = """ CREATE TABLE IF NOT EXISTS pagination (
+                                            last_scraped_page integer,
+                                            last_scraped_anime_id integer
+                                        ); """
+    sql_create_animelist_table = '''CREATE TABLE IF NOT EXISTS animelist (
+             id text, 
+             idanilist integer, 
+             idmal integer, 
+             title text, 
+             startdate text, 
+             enddate text, 
+             season text)'''
+    sql_create_datasource_table = """ CREATE TABLE IF NOT EXISTS datasource (
+                                                datasource_name text,
+                                                datasource_id INTEGER PRIMARY KEY AUTOINCREMENT
+                                            ); """
+    sql_create_details_table = '''CREATE TABLE IF NOT EXISTS details (
+                 id text, 
+                 description text, 
+                 status text, 
+                 format text, 
+                 animesource text,
+                 episodes integer, 
+                 datasource integer)'''
+    # CURSOR.execute(sql_create_animelist_table)
+    # CURSOR.execute(sql_create_pagination_table)
+    # CURSOR.execute(sql_create_datasource_table)
+    CURSOR.execute(sql_create_details_table)
+
+
+def database_qc(action):
+    if action == 'select':
+        CURSOR.execute('''SELECT * FROM animelist''')
+        data = CURSOR.fetchall()
+        print(data)
+    elif action == 'delete':
+        CURSOR.execute('''DELETE FROM animelist where id > 0''')
+
+
+def enter_data():
+    CURSOR.execute("""INSERT INTO datasource (datasource_name) 
+        VALUES ('Anilist')""")
+    CONN.commit()
+
+
+def add_column():
+    anilist_column = """ALTER TABLE animelist
+                        ADD idanilist integer"""
+    CURSOR.execute(anilist_column)
+
+def update_column():
+    move_idanilist = """UPDATE animelist SET
+                        idanilist=id
+                        id=unique_id
+                        WHERE product_id = 102"""
+    CURSOR.execute(move_idanilist)
+
+
+database_qc('delete')
+
 page_turner()
+
+# create_tables()
+
+# enter_data()
 
 # database_qc('select')
 # database_qc('delete')
