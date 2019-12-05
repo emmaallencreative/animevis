@@ -1,11 +1,13 @@
 import requests
-import sqlite3
 import logging
 import time
 import uuid
+import doa
 
-CONN = sqlite3.connect('../animevis.db')
-CURSOR = CONN.cursor()
+d = doa.DOA('../animevis.db')
+CURSOR = d.cursor
+CONN = d.conn
+
 logging.basicConfig(filename='animevis.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)
@@ -242,6 +244,7 @@ def insert_pagination_data(page, last_idanilist):
 
     CONN.commit()
 
+
 def get_last_scrapped_page():
     CURSOR.execute('''SELECT MAX(last_scraped_page) FROM pagination''')
     highest_page = CURSOR.fetchone()
@@ -259,77 +262,7 @@ def rate_limit_checker(ratelimitremaining):
         time.sleep(60)
 
 
-def create_tables():
-    sql_create_pagination_table = """ CREATE TABLE IF NOT EXISTS pagination (
-                                            last_scraped_page integer,
-                                            last_scraped_anime_id integer
-                                        ); """
-    sql_create_animelist_table = '''CREATE TABLE IF NOT EXISTS animelist (
-             id text, 
-             idanilist integer, 
-             idmal integer, 
-             title text, 
-             startdate text, 
-             enddate text, 
-             season text)'''
-    sql_create_datasource_table = """ CREATE TABLE IF NOT EXISTS datasource (
-                                                datasource_name text,
-                                                datasource_id INTEGER PRIMARY KEY AUTOINCREMENT
-                                            ); """
-    sql_create_details_table = '''CREATE TABLE IF NOT EXISTS details (
-                 id text, 
-                 description text, 
-                 status text, 
-                 format text, 
-                 animesource text,
-                 episodes integer, 
-                 datasource integer)'''
-    # CURSOR.execute(sql_create_animelist_table)
-    # CURSOR.execute(sql_create_pagination_table)
-    # CURSOR.execute(sql_create_datasource_table)
-    CURSOR.execute(sql_create_details_table)
-
-
-def database_qc(action):
-    if action == 'select':
-        CURSOR.execute('''SELECT * FROM animelist''')
-        data = CURSOR.fetchall()
-        print(data)
-    elif action == 'delete':
-        CURSOR.execute('''DELETE FROM animelist where id > 0''')
-
-
-def enter_data():
-    CURSOR.execute("""INSERT INTO datasource (datasource_name) 
-        VALUES ('Anilist')""")
-    CONN.commit()
-
-
-def add_column():
-    anilist_column = """ALTER TABLE animelist
-                        ADD idanilist integer"""
-    CURSOR.execute(anilist_column)
-
-def update_column():
-    move_idanilist = """UPDATE animelist SET
-                        idanilist=id
-                        id=unique_id
-                        WHERE product_id = 102"""
-    CURSOR.execute(move_idanilist)
-
-
-database_qc('delete')
-
 page_turner()
 
-# create_tables()
 
-# enter_data()
-
-# database_qc('select')
-# database_qc('delete')
-#
-# print('deleted database')
-
-# database_qc('select')
 
