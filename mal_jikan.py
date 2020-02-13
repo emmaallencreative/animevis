@@ -75,8 +75,6 @@ def get_anime_tail_data(idmal_list):
     """
     Looping through idmal's and returning data for 3 tails
     TODO:
-    Parse returns (add to for loop when adding to database)
-    Create database
     Remember where it was an start again
     """
     print("Hello!")
@@ -85,12 +83,25 @@ def get_anime_tail_data(idmal_list):
         stats_tail = get_anime_data(idmal, 'stats')
         recommendations_tail = get_anime_data(idmal, 'recommendations')
         reviews_tail = get_anime_data(idmal, 'reviews')
+        route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, idmal)
         break
-    return reviews_tail
 
 
-def parse_stats_tail(stats_tail):
-    stats_dict = {'watching': stats_tail['watching'],
+
+def route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, idmal):
+    """
+    Further work needed on genre and then add here
+    Add description db insert
+    Add recommendations db insert
+    Add reviews text db insert
+    Add review scores db insert
+    """
+    scores_data = parse_stats_tail(stats_tail, main_tail, idmal)
+    #insert_scores_data(scores_data, idmal)
+
+
+def parse_stats_tail(stats_tail, main_tail, idmal):
+    scores_dict = {'watching': stats_tail['watching'],
                       'completed': stats_tail['completed'],
                       'on_hold': stats_tail['on_hold'],
                       'dropped': stats_tail['dropped'],
@@ -115,9 +126,59 @@ def parse_stats_tail(stats_tail):
                        'scores_9_votes': stats_tail['scores']['9']['votes'],
                        'scores_9_percentage': stats_tail['scores']['9']['percentage'],
                        'scores_10_votes': stats_tail['scores']['10']['votes'],
-                       'scores_10_percentage': stats_tail['scores']['10']['percentage'],}
-    return(stats_dict)
+                       'scores_10_percentage': stats_tail['scores']['10']['percentage'],
+                       'averagescore': main_tail['score'],
+                       'scoredby': main_tail['scored_by'],
+                       'alltimerank': main_tail['rank'],
+                       'popularityrank': main_tail['popularity'],
+                       'popularityvolume': main_tail['members'],
+                       'favorites': main_tail['favorites'],
+                  }
+    return(scores_dict)
 
+def insert_scores_data(scores_dict, idmal):
+    CURSOR.execute("""INSERT INTO mal_jikan_scores (id, watching, completed, on_hold, dropped, plan_to_watch, 
+    status_total, scores_1_votes, scores_1_percentage, scores_2_votes, scores_2_percentage, scores_3_votes, 
+    scores_3_percentage, scores_4_votes, scores_4_percentage, scores_5_votes, scores_5_percentage, 
+    scores_6_votes, scores_6_percentage, scores_7_votes, scores_7_percentage, scores_8_votes, scores_8_percentage,
+     scores_9_votes, scores_9_percentage, scores_10_votes, scores_10_percentage, averagescore, scoredby, alltimerank, 
+     popularityrank, popularityvolume, favorites) 
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   (hex_dict[idmal],
+                    scores_dict['watching'],
+                    scores_dict['completed'],
+                    scores_dict['on_hold'],
+                    scores_dict['dropped'],
+                    scores_dict['plan_to_watch'],
+                    scores_dict['total'],
+                    scores_dict['scores_1_votes'],
+                    scores_dict['scores_1_percentage'],
+                    scores_dict['scores_2_votes'],
+                    scores_dict['scores_2_percentage'],
+                    scores_dict['scores_3_votes'],
+                    scores_dict['scores_3_percentage'],
+                    scores_dict['scores_4_votes'],
+                    scores_dict['scores_4_percentage'],
+                    scores_dict['scores_5_votes'],
+                    scores_dict['scores_5_percentage'],
+                    scores_dict['scores_6_votes'],
+                    scores_dict['scores_6_percentage'],
+                    scores_dict['scores_7_votes'],
+                    scores_dict['scores_7_percentage'],
+                    scores_dict['scores_8_votes'],
+                    scores_dict['scores_8_percentage'],
+                    scores_dict['scores_9_votes'],
+                    scores_dict['scores_9_percentage'],
+                    scores_dict['scores_10_votes'],
+                    scores_dict['scores_10_percentage'],
+                    scores_dict['averagescore'],
+                    scores_dict['scoredby'],
+                    scores_dict['alltimerank'],
+                    scores_dict['popularityrank'],
+                    scores_dict['popularityvolume'],
+                    scores_dict['favorites'],
+                    ))
+    CONN.commit()
 
 def parse_genres(main_tail):
     genres_list = []
@@ -127,17 +188,19 @@ def parse_genres(main_tail):
 
 
 def parse_main_tail(main_tail):
-    main_dict = {'averagescore': main_tail['score'],
-                      'scoredby': main_tail['scored_by'],
-                      'alltimerank': main_tail['rank'],
-                      'popularityrank': main_tail['popularity'],
-                      'popularityvolume': main_tail['members'],
-                      'favorites': main_tail['favorites'],
-                      'description': main_tail['synopsis'],
+    main_dict = {'description': main_tail['synopsis'],
                       'background': main_tail['background'],
                       'genres': parse_genres(main_tail),
                  }
     return(main_dict)
+
+def insert_genres_data(main_dict, idmal):
+    for genre in main_dict['genres']:
+        CURSOR.execute("""INSERT INTO mal_jikan_genres (id, genre) 
+        VALUES (?,?)""",
+                       (hex_dict[idmal],
+                        main_dict[genre]))
+        CONN.commit()
 
 
 def parse_recommendations_tail(recommendations_tail):
@@ -153,6 +216,7 @@ def parse_recommendations_tail(recommendations_tail):
 def parse_reviews_tail(reviews_tail):
     reviews_list = []
     for review in reviews_tail['reviews']:
+        del review['url']
         del review['type']
         del review['reviewer']['url']
         del review['reviewer']['image_url']
@@ -163,7 +227,7 @@ def parse_reviews_tail(reviews_tail):
 # print(get_anime_data(1, 'stats'))
 
 tups = get_idmal()
-print(convert_dict(tups))
+hex_dict = convert_dict(tups)
 idmal_list = convert_list(tups)
 
 #print(binary_search(idmal_list, len(idmal_list)-1, 5))
@@ -180,6 +244,9 @@ idmal_list = convert_list(tups)
 
 #print(parse_recommendations_tail(recommendations_tail))
 
-reviews_tail = get_anime_tail_data(idmal_list)
+#reviews_tail = get_anime_tail_data(idmal_list)
 
-print(parse_reviews_tail(reviews_tail))
+#print(parse_reviews_tail(reviews_tail))
+
+
+get_anime_tail_data(idmal_list)

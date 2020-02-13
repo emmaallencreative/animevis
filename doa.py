@@ -68,32 +68,48 @@ class DOA:
         sql_create_mal_jikan_descriptions_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_descriptions (
                              id text, 
                              description text, 
-                             background text)'''
+                             background text);'''
         sql_create_mal_jikan_genres_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_genres (
                                      id text, 
                                      genre text)'''
         sql_create_mal_jikan_recommendations_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_recommendations (
                                              id text, 
-                                             recommendation_mal_id integer
-                                             recommendation_title text
+                                             recommendation_mal_id integer,
+                                             recommendation_title text,
                                              recommendation_count integer
                                              )'''
         sql_create_mal_jikan_review_text_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_review_text (
                                              id text, 
-                                             review_mal_id integer
+                                             review_mal_id integer,
                                              review_text text
                                              )'''
-        # PLEASE FINISH THIS TABLE NEXT WEEK
+
         sql_create_mal_jikan_review_stats_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_review_stats (
                                              id text, 
-                                             review_mal_id integer
-                                             review_text text
+                                             review_mal_id integer,
+                                             helpful_count integer,
+                                             review_date text,
+                                             episodes_seen integer,
+                                             overall_score integer,
+                                             story_score integer,
+                                             animation_score integer,
+                                             sound_score integer,
+                                             character_score integer,
+                                             enjoyment_score integer
                                              )'''
 
         # self.cursor.execute(sql_create_animelist_table)
         # self.cursor.execute(sql_create_pagination_table)
         # self.cursor.execute(sql_create_datasource_table)
         # self.cursor.execute(sql_create_details_table)
+
+        self.cursor.execute(sql_create_mal_jikan_scores_table)
+        #self.cursor.execute(sql_create_mal_jikan_descriptions_table)
+        self.cursor.execute(sql_create_mal_jikan_genres_table)
+        self.cursor.execute(sql_create_mal_jikan_recommendations_table)
+        self.cursor.execute(sql_create_mal_jikan_review_text_table)
+        self.cursor.execute(sql_create_mal_jikan_review_stats_table)
+
 
     def database_qc(self, action):
         if action == 'select':
@@ -119,3 +135,6 @@ class DOA:
                             id=unique_id
                             WHERE product_id = 102"""
         self.cursor.execute(move_idanilist)
+
+d = DOA('../animevis.db')
+d.create_tables()
