@@ -136,6 +136,8 @@ def monitor_pagination():
     TODO
     Validate each missing id once - sends email to verify
     Time series rating data
+    See Air Master 6da5f9fabcd2450bbf7a0970a1b16ecb for incorrect dates, incorrect idmal and extra number on anilistid
+    Need to resolve above
     :return:
     """
     pass

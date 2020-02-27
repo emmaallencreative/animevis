@@ -73,6 +73,7 @@ def get_anime_data(idmal, tail=''):
 
 def get_anime_tail_data(idmal_list):
     """
+    BEFORE DOING ANYTHING ELSE SORT OUT ISSUES WITH ANIMELIST DATA _ SEE ANIMEVIS NOTES
     Looping through idmal's and returning data for 3 tails
     TODO:
     Remember where it was an start again
@@ -90,17 +91,20 @@ def get_anime_tail_data(idmal_list):
 
 def route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, idmal):
     """
-    Further work needed on genre and then add here
-    Add description db insert
-    Add recommendations db insert
-    Add reviews text db insert
-    Add review scores db insert
     """
-    scores_data = parse_stats_tail(stats_tail, main_tail, idmal)
+    scores_data = parse_stats_tail(stats_tail, main_tail)
+    genre_data = parse_genres(main_tail)
+    descriptions_data = parse_descriptions(main_tail)
+    recommendations_data = parse_recommendations_tail(recommendations_tail)
+    reviews_data = parse_reviews_tail(reviews_tail)
     #insert_scores_data(scores_data, idmal)
+    #insert_genres_data(genre_data, idmal)
+    #insert_descriptions_data(descriptions_data, idmal)
+    #insert_recommendations_data(recommendations_data, idmal)
+    #insert_review_text_data(reviews_data, idmal)
+    insert_review_stats_data(reviews_data, idmal)
 
-
-def parse_stats_tail(stats_tail, main_tail, idmal):
+def parse_stats_tail(stats_tail, main_tail):
     scores_dict = {'watching': stats_tail['watching'],
                       'completed': stats_tail['completed'],
                       'on_hold': stats_tail['on_hold'],
@@ -135,6 +139,7 @@ def parse_stats_tail(stats_tail, main_tail, idmal):
                        'favorites': main_tail['favorites'],
                   }
     return(scores_dict)
+
 
 def insert_scores_data(scores_dict, idmal):
     CURSOR.execute("""INSERT INTO mal_jikan_scores (id, watching, completed, on_hold, dropped, plan_to_watch, 
@@ -180,27 +185,37 @@ def insert_scores_data(scores_dict, idmal):
                     ))
     CONN.commit()
 
+
 def parse_genres(main_tail):
     genres_list = []
     for genre in main_tail['genres']:
         genres_list.append(genre['name'])
-    return genres_list
+    return {'genres': genres_list}
 
 
-def parse_main_tail(main_tail):
-    main_dict = {'description': main_tail['synopsis'],
-                      'background': main_tail['background'],
-                      'genres': parse_genres(main_tail),
-                 }
-    return(main_dict)
-
-def insert_genres_data(main_dict, idmal):
-    for genre in main_dict['genres']:
+def insert_genres_data(genre_data, idmal):
+    for genre in genre_data['genres']:
         CURSOR.execute("""INSERT INTO mal_jikan_genres (id, genre) 
         VALUES (?,?)""",
                        (hex_dict[idmal],
-                        main_dict[genre]))
+                        genre))
         CONN.commit()
+
+
+def parse_descriptions(main_tail):
+    descriptions_dict = {'description': main_tail['synopsis'],
+                      'background': main_tail['background']
+                 }
+    return(descriptions_dict)
+
+
+def insert_descriptions_data(descriptions_dict, idmal):
+    CURSOR.execute("""INSERT INTO mal_jikan_descriptions (id, description, background) 
+            VALUES (?,?,?)""",
+                   (hex_dict[idmal],
+                    descriptions_dict['description'],
+                    descriptions_dict['background']))
+    CONN.commit()
 
 
 def parse_recommendations_tail(recommendations_tail):
@@ -213,6 +228,18 @@ def parse_recommendations_tail(recommendations_tail):
     return(recommendations_list)
 
 
+def insert_recommendations_data(recommendations_data, idmal):
+    for recommendation in recommendations_data:
+        CURSOR.execute("""INSERT INTO mal_jikan_recommendations (id, recommendation_mal_id, recommendation_title, 
+        recommendation_count) 
+                VALUES (?,?,?,?)""",
+                       (hex_dict[idmal],
+                        recommendation['mal_id'],
+                        recommendation['title'],
+                        recommendation['recommendation_count']))
+        CONN.commit()
+
+
 def parse_reviews_tail(reviews_tail):
     reviews_list = []
     for review in reviews_tail['reviews']:
@@ -223,6 +250,33 @@ def parse_reviews_tail(reviews_tail):
         del review['reviewer']['username']
         reviews_list.append(review)
     return(reviews_list)
+
+def insert_review_text_data(reviews_data, idmal):
+    for review in reviews_data:
+        CURSOR.execute("""INSERT INTO mal_jikan_review_text (id, review_mal_id, review_text) 
+                VALUES (?,?,?)""",
+                       (hex_dict[idmal],
+                        review['mal_id'],
+                        review['content']))
+        CONN.commit()
+
+def insert_review_stats_data(reviews_data, idmal):
+    for review in reviews_data:
+        CURSOR.execute("""INSERT INTO mal_jikan_review_stats (id, review_mal_id, helpful_count, review_date, episodes_seen, 
+        overall_score, story_score, animation_score, sound_score, character_score, enjoyment_score) 
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                       (hex_dict[idmal],
+                        review['mal_id'],
+                        review['helpful_count'],
+                        review['date'],
+                        review['reviewer']['episodes_seen'],
+                        review['reviewer']['scores']['overall'],
+                        review['reviewer']['scores']['story'],
+                        review['reviewer']['scores']['animation'],
+                        review['reviewer']['scores']['sound'],
+                        review['reviewer']['scores']['character'],
+                        review['reviewer']['scores']['enjoyment'],))
+        CONN.commit()
 
 # print(get_anime_data(1, 'stats'))
 
