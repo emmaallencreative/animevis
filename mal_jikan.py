@@ -2,6 +2,7 @@ import requests
 from python import doa
 import time
 import logging
+from datetime import datetime
 
 '''
 Increment ids and save last id to database
@@ -73,8 +74,6 @@ def get_anime_data(idmal, tail=''):
 
 def get_anime_tail_data(idmal_list):
     """
-    BEFORE DOING ANYTHING ELSE SORT OUT ISSUES WITH ANIMELIST DATA _ SEE ANIMEVIS NOTES
-    Looping through idmal's and returning data for 3 tails
     TODO:
     Remember where it was an start again
     """
@@ -97,11 +96,11 @@ def route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, i
     descriptions_data = parse_descriptions(main_tail)
     recommendations_data = parse_recommendations_tail(recommendations_tail)
     reviews_data = parse_reviews_tail(reviews_tail)
-    #insert_scores_data(scores_data, idmal)
-    #insert_genres_data(genre_data, idmal)
-    #insert_descriptions_data(descriptions_data, idmal)
-    #insert_recommendations_data(recommendations_data, idmal)
-    #insert_review_text_data(reviews_data, idmal)
+    insert_scores_data(scores_data, idmal)
+    insert_genres_data(genre_data, idmal)
+    insert_descriptions_data(descriptions_data, idmal)
+    insert_recommendations_data(recommendations_data, idmal)
+    insert_review_text_data(reviews_data, idmal)
     insert_review_stats_data(reviews_data, idmal)
 
 def parse_stats_tail(stats_tail, main_tail):
@@ -147,8 +146,8 @@ def insert_scores_data(scores_dict, idmal):
     scores_3_percentage, scores_4_votes, scores_4_percentage, scores_5_votes, scores_5_percentage, 
     scores_6_votes, scores_6_percentage, scores_7_votes, scores_7_percentage, scores_8_votes, scores_8_percentage,
      scores_9_votes, scores_9_percentage, scores_10_votes, scores_10_percentage, averagescore, scoredby, alltimerank, 
-     popularityrank, popularityvolume, favorites) 
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+     popularityrank, popularityvolume, favorites, last_updated) 
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                    (hex_dict[idmal],
                     scores_dict['watching'],
                     scores_dict['completed'],
@@ -182,6 +181,7 @@ def insert_scores_data(scores_dict, idmal):
                     scores_dict['popularityrank'],
                     scores_dict['popularityvolume'],
                     scores_dict['favorites'],
+                    datetime.now()
                     ))
     CONN.commit()
 
@@ -195,10 +195,11 @@ def parse_genres(main_tail):
 
 def insert_genres_data(genre_data, idmal):
     for genre in genre_data['genres']:
-        CURSOR.execute("""INSERT INTO mal_jikan_genres (id, genre) 
-        VALUES (?,?)""",
+        CURSOR.execute("""INSERT INTO mal_jikan_genres (id, genre, last_updated) 
+        VALUES (?,?,?)""",
                        (hex_dict[idmal],
-                        genre))
+                        genre,
+                        datetime.now()))
         CONN.commit()
 
 
@@ -210,11 +211,12 @@ def parse_descriptions(main_tail):
 
 
 def insert_descriptions_data(descriptions_dict, idmal):
-    CURSOR.execute("""INSERT INTO mal_jikan_descriptions (id, description, background) 
-            VALUES (?,?,?)""",
+    CURSOR.execute("""INSERT INTO mal_jikan_descriptions (id, description, background, last_updated) 
+            VALUES (?,?,?,?)""",
                    (hex_dict[idmal],
                     descriptions_dict['description'],
-                    descriptions_dict['background']))
+                    descriptions_dict['background'],
+                    datetime.now()))
     CONN.commit()
 
 
@@ -231,12 +233,13 @@ def parse_recommendations_tail(recommendations_tail):
 def insert_recommendations_data(recommendations_data, idmal):
     for recommendation in recommendations_data:
         CURSOR.execute("""INSERT INTO mal_jikan_recommendations (id, recommendation_mal_id, recommendation_title, 
-        recommendation_count) 
-                VALUES (?,?,?,?)""",
+        recommendation_count, last_updated) 
+                VALUES (?,?,?,?,?)""",
                        (hex_dict[idmal],
                         recommendation['mal_id'],
                         recommendation['title'],
-                        recommendation['recommendation_count']))
+                        recommendation['recommendation_count'],
+                        datetime.now()))
         CONN.commit()
 
 
@@ -253,18 +256,19 @@ def parse_reviews_tail(reviews_tail):
 
 def insert_review_text_data(reviews_data, idmal):
     for review in reviews_data:
-        CURSOR.execute("""INSERT INTO mal_jikan_review_text (id, review_mal_id, review_text) 
-                VALUES (?,?,?)""",
+        CURSOR.execute("""INSERT INTO mal_jikan_review_text (id, review_mal_id, review_text, last_updated) 
+                VALUES (?,?,?,?)""",
                        (hex_dict[idmal],
                         review['mal_id'],
-                        review['content']))
+                        review['content'],
+                        datetime.now()))
         CONN.commit()
 
 def insert_review_stats_data(reviews_data, idmal):
     for review in reviews_data:
         CURSOR.execute("""INSERT INTO mal_jikan_review_stats (id, review_mal_id, helpful_count, review_date, episodes_seen, 
-        overall_score, story_score, animation_score, sound_score, character_score, enjoyment_score) 
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        overall_score, story_score, animation_score, sound_score, character_score, enjoyment_score, last_updated) 
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
                        (hex_dict[idmal],
                         review['mal_id'],
                         review['helpful_count'],
@@ -275,7 +279,8 @@ def insert_review_stats_data(reviews_data, idmal):
                         review['reviewer']['scores']['animation'],
                         review['reviewer']['scores']['sound'],
                         review['reviewer']['scores']['character'],
-                        review['reviewer']['scores']['enjoyment'],))
+                        review['reviewer']['scores']['enjoyment'],
+                        datetime.now()))
         CONN.commit()
 
 # print(get_anime_data(1, 'stats'))

@@ -3,6 +3,7 @@ import logging
 import time
 import uuid
 import doa
+from datetime import datetime
 
 d = doa.DOA('../animevis.db')
 CURSOR = d.cursor
@@ -136,8 +137,6 @@ def monitor_pagination():
     TODO
     Validate each missing id once - sends email to verify
     Time series rating data
-    See Air Master 6da5f9fabcd2450bbf7a0970a1b16ecb for incorrect dates, incorrect idmal and extra number on anilistid
-    Need to resolve above
     :return:
     """
     pass
@@ -165,15 +164,16 @@ def has_anime_ended_or_started(animedate):
     return ""
 
 def insert_animelist_data(animelist_dict):
-    CURSOR.execute("""INSERT INTO animelist (id, idanilist, idmal, title, startdate, enddate, season) 
-    VALUES (?,?,?,?,?,?,?)""",
+    CURSOR.execute("""INSERT INTO animelist (id, idanilist, idmal, title, startdate, enddate, season, last_updated) 
+    VALUES (?,?,?,?,?,?,?,?)""",
                    (animelist_dict['unique_id'],
                     animelist_dict['idanilist'],
                     animelist_dict['idmal'],
                     animelist_dict['title'],
                     animelist_dict['startdate'],
                     animelist_dict['enddate'],
-                    animelist_dict['season']))
+                    animelist_dict['season'],
+                    datetime.now()))
     CONN.commit()
 
 
@@ -189,16 +189,17 @@ def parse_animelist_data(unique_id, anime):
 
 
 def insert_details_data(details_dict):
-    CURSOR.execute("""INSERT INTO details (id, description, status, format, animesource, episodes, datasource
-) 
-    VALUES (?,?,?,?,?,?,?)""",
+    CURSOR.execute("""INSERT INTO details (id, description, status, format, animesource, episodes, datasource, 
+    last_updated) 
+    VALUES (?,?,?,?,?,?,?,?)""",
                    (details_dict['unique_id'],
                     details_dict['description'],
                     details_dict['status'],
                     details_dict['format'],
                     details_dict['animesource'],
                     details_dict['episodes'],
-                    details_dict['datasource']))
+                    details_dict['datasource'],
+                    datetime.now()))
     CONN.commit()
 
 
@@ -240,9 +241,9 @@ def page_turner():
 
 
 def insert_pagination_data(page, last_idanilist):
-    CURSOR.execute("""INSERT INTO pagination (last_scraped_page, last_scraped_anime_id)
-    VALUES (?,?)""",
-                   (page, last_idanilist))
+    CURSOR.execute("""INSERT INTO pagination (last_scraped_page, last_scraped_anime_id, last_updated)
+    VALUES (?,?,?)""",
+                   (page, last_idanilist, datetime.now()))
 
     CONN.commit()
 

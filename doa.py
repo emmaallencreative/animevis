@@ -9,7 +9,8 @@ class DOA:
     def create_tables(self):
         sql_create_pagination_table = """ CREATE TABLE IF NOT EXISTS pagination (
                                                 last_scraped_page integer,
-                                                last_scraped_anime_id integer
+                                                last_scraped_anime_id integer,
+                                                last_updated text
                                             ); """
         sql_create_animelist_table = '''CREATE TABLE IF NOT EXISTS animelist (
                  id text, 
@@ -18,7 +19,9 @@ class DOA:
                  title text, 
                  startdate text, 
                  enddate text, 
-                 season text)'''
+                 season text,
+                 last_updated text)'''
+        #Deciding not to use this table anymore - each source will have a separate table so not needed
         sql_create_datasource_table = """ CREATE TABLE IF NOT EXISTS datasource (
                                                     datasource_name text,
                                                     datasource_id INTEGER PRIMARY KEY AUTOINCREMENT
@@ -30,7 +33,8 @@ class DOA:
                      format text, 
                      animesource text,
                      episodes integer, 
-                     datasource integer)'''
+                     datasource integer,
+                     last_updated text)'''
         sql_create_mal_jikan_scores_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_scores (
                      id text, 
                      watching integer,
@@ -64,24 +68,29 @@ class DOA:
                      alltimerank integer,
                      popularityrank integer,
                      popularityvolume integer,
-                     favorites integer)'''
+                     favorites integer,
+                     last_updated text)'''
         sql_create_mal_jikan_descriptions_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_descriptions (
                              id text, 
                              description text, 
-                             background text);'''
+                             background text,
+                             last_updated text);'''
         sql_create_mal_jikan_genres_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_genres (
                                      id text, 
-                                     genre text)'''
+                                     genre text,
+                                     last_updated text)'''
         sql_create_mal_jikan_recommendations_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_recommendations (
                                              id text, 
                                              recommendation_mal_id integer,
                                              recommendation_title text,
-                                             recommendation_count integer
+                                             recommendation_count integer,
+                                             last_updated text
                                              )'''
         sql_create_mal_jikan_review_text_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_review_text (
                                              id text, 
                                              review_mal_id integer,
-                                             review_text text
+                                             review_text text,
+                                             last_updated text
                                              )'''
 
         sql_create_mal_jikan_review_stats_table = '''CREATE TABLE IF NOT EXISTS mal_jikan_review_stats (
@@ -95,16 +104,17 @@ class DOA:
                                              animation_score integer,
                                              sound_score integer,
                                              character_score integer,
-                                             enjoyment_score integer
+                                             enjoyment_score integer,
+                                             last_updated text
                                              )'''
 
-        # self.cursor.execute(sql_create_animelist_table)
-        # self.cursor.execute(sql_create_pagination_table)
-        # self.cursor.execute(sql_create_datasource_table)
-        # self.cursor.execute(sql_create_details_table)
+        #self.cursor.execute(sql_create_animelist_table)
+        self.cursor.execute(sql_create_pagination_table)
+        #self.cursor.execute(sql_create_datasource_table)
+        self.cursor.execute(sql_create_details_table)
 
         self.cursor.execute(sql_create_mal_jikan_scores_table)
-        #self.cursor.execute(sql_create_mal_jikan_descriptions_table)
+        self.cursor.execute(sql_create_mal_jikan_descriptions_table)
         self.cursor.execute(sql_create_mal_jikan_genres_table)
         self.cursor.execute(sql_create_mal_jikan_recommendations_table)
         self.cursor.execute(sql_create_mal_jikan_review_text_table)
