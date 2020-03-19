@@ -12,6 +12,10 @@ class DOA:
                                                 last_scraped_anime_id integer,
                                                 last_updated text
                                             ); """
+        sql_create_mal_jikan_pagination_table = """ CREATE TABLE IF NOT EXISTS mal_jikan_pagination (
+                                                        last_scraped_anime_id integer,
+                                                        last_updated text
+                                                    ); """
         sql_create_animelist_table = '''CREATE TABLE IF NOT EXISTS animelist (
                  id text, 
                  idanilist integer, 
@@ -109,16 +113,17 @@ class DOA:
                                              )'''
 
         #self.cursor.execute(sql_create_animelist_table)
-        self.cursor.execute(sql_create_pagination_table)
+        #self.cursor.execute(sql_create_pagination_table)
+        self.cursor.execute(sql_create_mal_jikan_pagination_table)
         #self.cursor.execute(sql_create_datasource_table)
-        self.cursor.execute(sql_create_details_table)
+        #self.cursor.execute(sql_create_details_table)
 
-        self.cursor.execute(sql_create_mal_jikan_scores_table)
-        self.cursor.execute(sql_create_mal_jikan_descriptions_table)
-        self.cursor.execute(sql_create_mal_jikan_genres_table)
-        self.cursor.execute(sql_create_mal_jikan_recommendations_table)
-        self.cursor.execute(sql_create_mal_jikan_review_text_table)
-        self.cursor.execute(sql_create_mal_jikan_review_stats_table)
+        #self.cursor.execute(sql_create_mal_jikan_scores_table)
+        #self.cursor.execute(sql_create_mal_jikan_descriptions_table)
+        #self.cursor.execute(sql_create_mal_jikan_genres_table)
+        #self.cursor.execute(sql_create_mal_jikan_recommendations_table)
+        #self.cursor.execute(sql_create_mal_jikan_review_text_table)
+        #self.cursor.execute(sql_create_mal_jikan_review_stats_table)
 
 
     def database_qc(self, action):

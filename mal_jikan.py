@@ -17,8 +17,11 @@ def get_idmal():
     """
     Getting our unique ids and available idmals from the anime database
     """
-    CURSOR.execute('''SELECT id,idmal FROM animelist WHERE idmal >= 1''')
+    last_scrapped_id = get_last_scrapped_id()
+    CURSOR.execute(f'''SELECT id,idmal FROM animelist WHERE idmal > {last_scrapped_id}''')
     idlist = CURSOR.fetchall()
+    print(last_scrapped_id)
+    print(idlist)
     return idlist
 
 
@@ -84,7 +87,7 @@ def get_anime_tail_data(idmal_list):
         recommendations_tail = get_anime_data(idmal, 'recommendations')
         reviews_tail = get_anime_data(idmal, 'reviews')
         route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, idmal)
-        break
+        insert_pagination_data(idmal)
 
 
 
@@ -283,11 +286,26 @@ def insert_review_stats_data(reviews_data, idmal):
                         datetime.now()))
         CONN.commit()
 
+
+def insert_pagination_data(idmal):
+    CURSOR.execute("""INSERT INTO mal_jikan_pagination (last_scraped_anime_id, last_updated)
+    VALUES (?,?)""",
+                   (idmal, datetime.now()))
+    CONN.commit()
+
+
+def get_last_scrapped_id():
+    CURSOR.execute('''SELECT MAX(last_scraped_anime_id) FROM mal_jikan_pagination''')
+    highest_id = CURSOR.fetchone()
+    logging.debug(f"The highest id is {highest_id[0]}")
+    if highest_id[0] is None:
+        return 1
+    else:
+        return highest_id[0]
+
 # print(get_anime_data(1, 'stats'))
 
-tups = get_idmal()
-hex_dict = convert_dict(tups)
-idmal_list = convert_list(tups)
+
 
 #print(binary_search(idmal_list, len(idmal_list)-1, 5))
 
@@ -298,7 +316,6 @@ idmal_list = convert_list(tups)
 #print(parse_main_tail(main_tail))
 
 
-
 #recommendations_tail = get_anime_tail_data(idmal_list)
 
 #print(parse_recommendations_tail(recommendations_tail))
@@ -307,5 +324,8 @@ idmal_list = convert_list(tups)
 
 #print(parse_reviews_tail(reviews_tail))
 
+tups = get_idmal()
+hex_dict = convert_dict(tups)
+idmal_list = convert_list(tups)
 
 get_anime_tail_data(idmal_list)
