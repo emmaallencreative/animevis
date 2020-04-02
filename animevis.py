@@ -19,7 +19,6 @@ def create_query_template():
     query = '''
     query (
       $page: Int,
-      $type: MediaType,
       $format: MediaFormat,
       $startDate: String,
       $endDate: String,
@@ -41,7 +40,7 @@ def create_query_template():
           startDate_like: $startDate, # "2017%" will get all media starting in 2017, alternatively you could use the lesser & greater suffixes
           endDate_like: $endDate,
           season: $season,
-          type: $type,
+          type: ANIME,
           format: $format,
           genre_in: $genres,
           genre_not_in: $genresExclude,
@@ -145,7 +144,7 @@ def monitor_pagination():
 def get_anime_data(page):
     variables = {
         'page': page,
-        'perPage': 5
+        'perPage': 5,
     }
     url = 'https://graphql.anilist.co'
     query = create_query_template()
