@@ -1,0 +1,55 @@
+2020-04-21 20:44:12,791 - root - DEBUG - The highest id is 1544
+2020-04-21 20:44:12,824 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:13,090 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1545// HTTP/1.1" 301 309
+2020-04-21 20:44:15,954 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1545 HTTP/1.1" 404 136
+2020-04-21 20:44:17,961 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:18,161 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1545/stats/ HTTP/1.1" 301 315
+2020-04-21 20:44:19,234 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1545/stats HTTP/1.1" 404 144
+2020-04-21 20:44:21,238 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:21,416 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1545/recommendations/ HTTP/1.1" 301 325
+2020-04-21 20:44:22,477 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1545/recommendations HTTP/1.1" 404 145
+2020-04-21 20:44:24,481 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:24,683 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1545/reviews/ HTTP/1.1" 301 317
+2020-04-21 20:44:25,686 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1545/reviews HTTP/1.1" 404 150
+2020-04-21 20:44:27,688 - root - ERROR - 'watching'
+Traceback (most recent call last):
+  File "C:/Users/em100/Documents/Data/anime_visualisation_project/python/mal_jikan.py", line 90, in get_anime_tail_data
+    route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, idmal)
+  File "C:/Users/em100/Documents/Data/anime_visualisation_project/python/mal_jikan.py", line 100, in route_tail_data
+    scores_data = parse_stats_tail(stats_tail, main_tail)
+  File "C:/Users/em100/Documents/Data/anime_visualisation_project/python/mal_jikan.py", line 113, in parse_stats_tail
+    scores_dict = {'watching': stats_tail['watching'],
+KeyError: 'watching'
+2020-04-21 20:44:27,689 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:27,885 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1546// HTTP/1.1" 301 309
+2020-04-21 20:44:27,943 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1546 HTTP/1.1" 200 2204
+2020-04-21 20:44:29,947 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:30,122 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1546/stats/ HTTP/1.1" 301 315
+2020-04-21 20:44:31,828 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1546/stats HTTP/1.1" 200 289
+2020-04-21 20:44:33,831 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:33,985 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1546/recommendations/ HTTP/1.1" 301 325
+2020-04-21 20:44:35,395 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1546/recommendations HTTP/1.1" 200 1739
+2020-04-21 20:44:37,398 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:37,593 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1546/reviews/ HTTP/1.1" 301 317
+2020-04-21 20:44:39,664 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1546/reviews HTTP/1.1" 200 None
+2020-04-21 20:44:41,967 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:42,129 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1547// HTTP/1.1" 301 309
+2020-04-21 20:44:43,524 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1547 HTTP/1.1" 200 968
+2020-04-21 20:44:45,528 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:45,704 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1547/stats/ HTTP/1.1" 301 315
+2020-04-21 20:44:49,266 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1547/stats HTTP/1.1" 200 266
+2020-04-21 20:44:51,273 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:51,432 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1547/recommendations/ HTTP/1.1" 301 325
+2020-04-21 20:44:52,644 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1547/recommendations HTTP/1.1" 200 131
+2020-04-21 20:44:54,648 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:54,817 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1547/reviews/ HTTP/1.1" 301 317
+2020-04-21 20:44:56,108 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1547/reviews HTTP/1.1" 200 125
+2020-04-21 20:44:58,150 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:44:58,378 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1548// HTTP/1.1" 301 309
+2020-04-21 20:44:58,430 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1548 HTTP/1.1" 200 1878
+2020-04-21 20:45:00,433 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:45:00,667 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1548/stats/ HTTP/1.1" 301 315
+2020-04-21 20:45:03,808 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1548/stats HTTP/1.1" 200 274
+2020-04-21 20:45:05,811 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.jikan.moe:443
+2020-04-21 20:45:05,991 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "POST /v3/anime/1548/recommendations/ HTTP/1.1" 301 325
+2020-04-21 20:45:07,199 - urllib3.connectionpool - DEBUG - https://api.jikan.moe:443 "GET /v3/anime/1548/recommendations HTTP/1.1" 200 378

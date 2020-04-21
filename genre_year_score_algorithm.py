@@ -12,10 +12,8 @@ cursor = conn.cursor()
 os.environ['PATH'] = os.environ['PATH']+';'+os.environ['CONDA_PREFIX']+r"\Library\bin\graphviz"
 
 '''
-targets = [column header of seasons, the numerical one] 
-features = [column header of Score, Popularity]
-y (answers) = df.columns[targets]
-x (data) = df.columns[features]
+
+
 '''
 
 def sql_pull_score_season_popularity():
@@ -29,37 +27,40 @@ def sql_pull_score_season_popularity():
                             AND mal_jikan_scores.popularityvolume IS NOT NULL;'''
     data = pd.read_sql_query(sql_query, conn)
 
-    print(data)
+    return data
 
-sql_pull_score_season_popularity()
+data = sql_pull_score_season_popularity()
 
-# iris = load_iris()
-# test_idx = [0, 50, 100]
-#
-# train_target = np.delete(iris.target, test_idx)
-# train_data = np.delete(iris.data, test_idx, axis=0)
-#
-# test_target = iris.target[test_idx]
-# test_data = iris.data[test_idx]
-#
-# clf = tree.DecisionTreeClassifier()
-# clf.fit(train_data, train_target)
-#
-# array = np.empty((2,4))
+targets = ['season']
+features = ['averagescore', 'popularityvolume']
+data.replace(['WINTER', 'SPRING', 'SUMMER', 'FALL'], [0, 1, 2, 3], inplace=True)
+y = data.loc[:, targets]
+x = data.loc[:, features]
 
+print(data)
 
-# #['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']
-# print(test_data)
-# #print(clf.predict(array))
-#
-# dot_data = StringIO()
-# tree.export_graphviz(clf,
-#                      out_file=dot_data,
-#                      feature_names=iris.feature_names,
-#                      class_names=iris.target_names,
-#                      filled=True, rounded=True,
-#                      impurity=False)
-#
-# graph = pydot.graph_from_dot_data(dot_data.getvalue())
-# graph.write_pdf('Graph.pdf')
+test_idx = [27, 130, 206, 540]
+
+train_target = y.drop(test_idx)
+train_data = x.drop(test_idx)
+
+test_target = y.loc[test_idx, :]
+test_data = x.loc[test_idx, :]
+
+clf = tree.DecisionTreeClassifier()
+clf.fit(train_data, train_target)
+
+print(test_data)
+print(clf.predict(test_data))
+
+dot_data = StringIO()
+tree.export_graphviz(clf,
+                     out_file=dot_data,
+                     feature_names=['Average Score', 'Popularity Volume'],
+                     class_names=['WINTER', 'SPRING', 'SUMMER', 'FALL'],
+                     filled=True, rounded=True,
+                     impurity=False)
+
+graph = pydot.graph_from_dot_data(dot_data.getvalue())
+graph.write_pdf('Score_Popularity_Season_Graph.pdf')
 

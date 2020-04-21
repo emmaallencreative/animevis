@@ -4,9 +4,9 @@ import time
 import logging
 from datetime import datetime
 
-'''
-Increment ids and save last id to database
-'''
+logging.basicConfig(filename='mal_jikan.log',
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
 
 d = doa.DOA('../animevis.db')
 CURSOR = d.cursor
@@ -82,12 +82,15 @@ def get_anime_tail_data(idmal_list):
     """
     print("Hello!")
     for idmal in idmal_list:
-        main_tail = get_anime_data(idmal, '')
-        stats_tail = get_anime_data(idmal, 'stats')
-        recommendations_tail = get_anime_data(idmal, 'recommendations')
-        reviews_tail = get_anime_data(idmal, 'reviews')
-        route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, idmal)
-        insert_pagination_data(idmal)
+        try:
+            main_tail = get_anime_data(idmal, '')
+            stats_tail = get_anime_data(idmal, 'stats')
+            recommendations_tail = get_anime_data(idmal, 'recommendations')
+            reviews_tail = get_anime_data(idmal, 'reviews')
+            route_tail_data(main_tail, stats_tail, recommendations_tail, reviews_tail, idmal)
+            insert_pagination_data(idmal)
+        except Exception as e:
+            logging.exception(e)
 
 
 
